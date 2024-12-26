@@ -1,3 +1,11 @@
+/*
+G231210355 Metehan Gülşer
+B231210355 Emir Kır
+G231210387 Yiğit Alp Çakır
+B211210006 Muhammet Enes Nas
+B221210003 Akif Emre Yaman
+*/
+
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
@@ -24,4 +32,4 @@ void handle_cat(char *filename);
 void execute_command(char* input);
 void handle_pipe_and_semicolon(char* input);
 
-#endif // PROGRAM_H
+#endif
