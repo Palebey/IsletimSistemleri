@@ -6,30 +6,36 @@ B211210006 Muhammet Enes Nas
 B221210003 Akif Emre Yaman
 */
 
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#define TRUE 1
+#define FALSE !TRUE
+#define LIMIT 256 // max number of tokens for a command
+#define MAXLINE 1024 // max number of characters from user input
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <ctype.h>
 
-#define MAX_LINE 1024
+#define MAX_COMMANDS 3   // Maksimum komut sayısı
+#define MAX_ARGS 10      // Maksimum argüman sayısı
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
 
-// Fonksiyon prototipleri
-void handle_cd(char* path);
-void handle_help();
-void handle_increment(int num);
-void handle_quit();
-void handle_echo(char *arg);
-void handle_sleep(int sec);
-void handle_ls();
-void handle_cat(char *filename);
-void execute_command(char* input);
-void handle_pipe_and_semicolon(char* input);
+static char* currentDirectory;
+extern char** environ;
 
-#endif
+void sig_chld(int);
+int os_launch(char **args, int background);
+int os_launchbg(char **args);
+void inputRD(char *args[],char* inputFile);
+void outputRD(char *args[],char* inputFile);
+int os_cd(char **args);
+int os_help(char **args);
+int os_quit(char **args);
+int os_increment(char **args);
+int commandHandler(char *args[]);
+int Pipe_Handler(const char *number);
+int executeCommand(char *args[]);
+int executePipe(char *leftArgs[], char *rightArgs[]);

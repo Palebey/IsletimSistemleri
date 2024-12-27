@@ -1,6 +1,6 @@
 Isletim Sistemleri Proje
 
-12. Grup Üyeleri
+Grup Üyeleri
 
 G231210355 Metehan Gülşer
 
