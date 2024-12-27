@@ -97,7 +97,126 @@ void handle_pipe_and_semicolon(char* input) {
         }
     }
 }
+void execute_command(char* input) {
+    char* token;
+    char* args[MAX_LINE / 2 + 1];  // Komutları saklamak için dizi
+    int background = 0;  // Arka planda çalışacak mı?
+    int redirection = 0; // Çıkış yönlendirme işareti var mı?
+    char* output_file = NULL;  // Çıkış dosyası
 
+    token = strtok(input, " \t\r\n");  // Komutu ilk parçaya ayır
+    int i = 0;
+
+    // Arka planda çalışacak komutların belirlenmesi
+    while (token != NULL) {
+        if (strcmp(token, "&") == 0) {
+            background = 1;  // Eğer '&' var ise arka planda çalıştır
+            break;  // '&' işaretinden sonrası okunmaz
+        }
+        if (strcmp(token, ">") == 0) {
+            redirection = 1;  // Çıkış yönlendirme
+            token = strtok(NULL, " \t\r\n");
+            output_file = token;  // Dosya adını al
+            break;
+        }
+        args[i++] = token;
+        token = strtok(NULL, " \t\r\n");
+    }
+    args[i] = NULL;  // Komut listemizi sonlandır
+
+    if (args[0] == NULL) {
+        return;  // Boş girdi, işlem yapma
+    }
+
+    pid_t pid = fork();
+    if (pid == 0) {  // Çocuk process
+        // Eğer çıkış yönlendirmesi varsa
+        if (redirection) {
+            int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+            if (fd == -1) {
+                perror("Redirection failed");
+                exit(1);
+            }
+            dup2(fd, STDOUT_FILENO);  // Standart çıktıyı dosyaya yönlendir
+            close(fd);
+        }
+
+        // cd komutu
+        if (strcmp(args[0], "cd") == 0) {
+            if (args[1] != NULL) {
+                handle_cd(args[1]);
+            } else {
+                printf("cd: missing argument\n");
+            }
+        }
+        // help komutu
+        else if (strcmp(args[0], "help") == 0) {
+            handle_help();
+        }
+        // quit komutu
+        else if (strcmp(args[0], "quit") == 0) {
+            handle_quit();
+        }
+        // increment komutu
+        else if (strcmp(args[0], "increment") == 0) {
+            if (args[1] != NULL && isdigit(args[1][0])) {
+                handle_increment(atoi(args[1]));
+            } else {
+                printf("increment: invalid argument. Provide a number.\n");
+            }
+        }
+        // echo komutu
+        else if (strcmp(args[0], "echo") == 0) {
+            if (args[1] != NULL) {
+                handle_echo(args[1]);  // echo çıktısını ver
+            } else {
+                printf("echo: missing argument\n");
+            }
+        }
+        // sleep komutu
+        else if (strcmp(args[0], "sleep") == 0) {
+            if (args[1] != NULL && isdigit(args[1][0])) {
+                handle_sleep(atoi(args[1]));  // Süre kadar uyuma
+            } else {
+                printf("sleep: invalid argument. Provide a valid number of seconds.\n");
+            }
+        }
+        // ls komutu
+        else if (strcmp(args[0], "ls") == 0) {
+            handle_ls();  // ls komutunu çalıştır
+        }
+        // cat komutunun işlenmesi
+        else if (strcmp(args[0], "cat") == 0) {
+            if (args[1] != NULL) {
+                handle_cat(args[1]);  // cat komutunu çalıştır
+            } else {
+                printf("cat: missing argument. Provide a filename.\n");
+            }
+        }
+        // Bilinmeyen komut
+        else {
+            printf("Unknown command: %s\n", args[0]);
+        }
+        exit(0);
+    }
+    else if (pid > 0) {  // Ebeveyn process
+        if (!background) {  // Arka planda çalışmayacaksa
+            int status;
+            waitpid(pid, &status, 0);  // Çocuğun bitmesini bekle
+        } else {
+            // Arka planda çalışıyorsa, hemen komut istemine dön
+            printf("[%d] running in background\n", pid);
+            // İşlem bitiminde sonuçları yazdır
+            int status;
+            waitpid(pid, &status, WNOHANG);  // Arka planda devam etmesine izin ver
+            if (WIFEXITED(status)) {
+                printf("[%d] retval: %d\n", pid, WEXITSTATUS(status));
+            }
+        }
+    } else {
+        perror("fork failed");
+    }
+}
 int main() {
     char input[MAX_LINE];
 printf("##################\n##################\n###### SHELL #####\n##################\n##################\n\n\n");
