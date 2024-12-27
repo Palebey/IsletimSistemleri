@@ -6,7 +6,68 @@ B211210006 Muhammet Enes Nas
 B221210003 Akif Emre Yaman
 */
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <ctype.h>
+
+#define MAX_LINE 1024
+
+
+// cd komutunun işlenmesi
+void handle_cd(char* path) {
+    if (chdir(path) != 0) {
+        perror("cd error");
+    }
+}
+
+// help komutunun işlenmesi
+void handle_help() {
+    printf("Commands:\n");
+    printf("  cd <directory>  - Change directory\n");
+    printf("  help            - Show this help message\n");
+    printf("  quit            - Exit the shell\n");
+    printf("  increment <num> - Increment a number\n");
+    printf("  sleep <sec>     - Sleep for a number of seconds\n");
+    printf("  ls              - List directory contents\n");
+    printf("  cat <filename>  - Display contents of a file\n");
+}
+
+// increment komutunun işlenmesi
+void handle_increment(int num) {
+    printf("Incremented number: %d\n", num + 1);
+}
+
+// quit komutunun işlenmesi
+ void handle_quit() {
+    printf("Exiting shell...\n");
+    exit (0);
+}
+
+// echo komutunun işlenmesi
+void handle_echo(char *arg) {
+    printf("%s\n", arg);  // Echo komutunun çıktısını yazdır
+}
+
+// sleep komutunun işlenmesi
+void handle_sleep(int sec) {
+    printf("Sleeping for %d seconds...\n", sec);
+    sleep(sec);  // Belirtilen süre kadar bekle
+}
+
+// ls komutunun işlenmesi
+void handle_ls() {
+    // ls komutunu çalıştır
+    system("ls");
+}
+
 // cat komutunun işlenmesi (dosyanın içeriğini yazdırır)
+
 void handle_cat(char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == NULL) {
